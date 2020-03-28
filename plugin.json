@@ -12,5 +12,14 @@
   "sourceUrl": "https://github.com/jimallman/interrobang-rack-modules/",
   "donateUrl": "https://paypal.me/jimallman",
   "changelogUrl": "",
-  "modules": []
+  "modules": [
+    {
+      "slug": "ScribbleStrip",
+      "name": "ScribbleStrip",
+      "description": "Makes it easy to navigate a complex patch.",
+      "tags": [
+        "visual"
+      ]
+    }
+  ]
 }
