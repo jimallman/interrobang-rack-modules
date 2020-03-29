@@ -8,3 +8,5 @@ This is a custom label you can use to organize your patch and label sub-assembli
 ![One line, bottom to top](doc/ss3-demo-one-line.png?raw=true "Title")
 &nbsp; &nbsp;
 ![Two lines, top to bottom](doc/ss3-demo-two-lines.png?raw=true "Title")
+
+_This module uses the swell [Mad Midnight Marker](res/mad-midnight-marker-font) typeface by Darrell Flood (dadiomouse@gmail.com)._
