@@ -5,5 +5,5 @@ Free modules for the [VCV Rack virtual modular synth](https://vcvrack.com/). The
 ### Scribble Strip, [3 HP](http://www.doepfer.de/a100_man/a100m_e.htm) (SS-3)
 This is a custom label you can use to organize your patch and label sub-assemblies, for example you might have a series of modules labeled "DRUM MACHINE". If you enter a lot of text, it can fit a second line nicely. You can also flip the text orientation as shown in these examples.
 
-![One line, bottom to top](relative/path/to/img.jpg?raw=true "Title")
-![Two lines, top to bottom](relative/path/to/img.jpg?raw=true "Title")
+![One line, bottom to top](doc/ss3-demo-one-line.png?raw=true "Title")
+![Two lines, top to bottom](doc/ss3-demo-two-lines.png?raw=true "Title")
