@@ -4,16 +4,25 @@
 struct ScribbleStrip : Module {
 	std::string promptText = "Rt-click to edit";
 	std::string scribbleText = promptText;
+	bool writeTextFromTop = false;
 
 	json_t *dataToJson() override {
 		json_t *rootJ = json_object();
 		json_object_set_new(rootJ, "labelText", json_string(scribbleText.c_str()));
+		json_object_set_new(rootJ, "writeTextFromTop", json_boolean(writeTextFromTop));
 		return rootJ;
 	}
 	void dataFromJson(json_t *rootJ) override {
 		json_t *labelTextJ = json_object_get(rootJ, "labelText");
 		if (labelTextJ) {
 			scribbleText = json_string_value(labelTextJ);
+		}
+
+		json_t* writeTextFromTopJ = json_object_get(rootJ, "writeTextFromTop");
+		if (writeTextFromTopJ && json_is_true(writeTextFromTopJ)) {
+			writeTextFromTop = true;
+		} else {
+			writeTextFromTop = false;  // module default
 		}
 	}
 
@@ -38,14 +47,25 @@ struct ScribbleWidget : TransparentWidget {
 		nvgFontFaceId(args.vg, font->handle);
 		nvgTextLetterSpacing(args.vg, 0);
 		nvgFillColor(args.vg, nvgRGBA(0xff, 0xff, 0xff, 0xff));
-		nvgRotate(args.vg, -M_PI / 2.0f);
 		float lineBreak = 325;
 		// test the height of the proposed text, adjust position as needed
 		float testBounds[4];
 		nvgTextBoxBounds(args.vg, 0, 0, lineBreak, scrText.c_str(), NULL, testBounds);
-		// adjust for one or two lines of text
-		float textTop = (testBounds[3] > 20) ? 0 : 10;
-		nvgTextBox(args.vg, -6, textTop, lineBreak, scrText.c_str(), NULL);
+		// adjust below for one or two lines of text
+		bool multilineText = (testBounds[3] > 20);
+		float startX, startY;
+		// prepare layout based on chosen text orientation
+		if (module && module->writeTextFromTop) {
+			nvgRotate(args.vg, nvgDegToRad(90.0f));  // runs down!
+			startX = 22 - lineBreak;
+			startY = multilineText ? -11 : 1;
+		} else {
+			//nvgRotate(args.vg, -M_PI / 2.0f);  // runs up
+			nvgRotate(args.vg, nvgDegToRad(-90.0f));  // runs up?
+			startX = -6;
+			startY = multilineText ? 1 : 11;
+		}
+		nvgTextBox(args.vg, startX, startY, lineBreak, scrText.c_str(), NULL);
 	}
 };
 
@@ -63,7 +83,7 @@ struct ScribbleStripWidget : ModuleWidget {
 		addChild(msgDisplay);
 	}
 
-	struct ScribbleMenuItem : MenuItem {
+	struct ScribbleEditMenuItem : MenuItem {
 		ScribbleStrip *module ;
 		void onAction(const event::Action &e) override {
 			std::string beforeValue = (module->scribbleText == module->promptText) ? "" : module->scribbleText.c_str();
@@ -74,16 +94,27 @@ struct ScribbleStripWidget : ModuleWidget {
 			}
 		}
 	};
+	struct ScribbleFlipMenuItem : MenuItem {
+		ScribbleStrip *module ;
+		void onAction(const event::Action &e) override {
+			module->writeTextFromTop = !(module->writeTextFromTop);
+			DEBUG("writeTextFromTop is now %d", module->writeTextFromTop);
+		}
+	};
 	void appendContextMenu(Menu *menu) override {
 		//LABEL *module = dynamic_cast<LABEL*>(this->module);
 		ScribbleStrip *module = dynamic_cast<ScribbleStrip*>(this->module);
 		assert(module);
 
 		menu->addChild(new MenuEntry);
-		ScribbleMenuItem *menuRootItem = new ScribbleMenuItem;
-		menuRootItem->text = "Edit label";
-		menuRootItem->module = module;
-		menu->addChild(menuRootItem);
+		ScribbleEditMenuItem *menuEdit = new ScribbleEditMenuItem;
+		menuEdit->text = "Edit label";
+		menuEdit->module = module;
+		menu->addChild(menuEdit);
+		ScribbleFlipMenuItem *menuFlip = new ScribbleFlipMenuItem;
+		menuFlip->text = "Flip text top-to-bottom";
+		menuFlip->module = module;
+		menu->addChild(menuFlip);
 	};
 };
 
