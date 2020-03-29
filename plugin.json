@@ -20,6 +20,16 @@
       "tags": [
         "visual"
       ]
+    },
+    {
+      "slug": "Whisper",
+      "name": "Whisper",
+      "description": "Invert and delay audio or CV",
+      "tags": [
+        "Delay",
+        "Dynamics",
+        "Effect"
+      ]
     }
   ]
 }
