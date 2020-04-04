@@ -83,34 +83,58 @@ struct ScribbleStripWidget : ModuleWidget {
 		addChild(msgDisplay);
 	}
 
-	struct ScribbleEditMenuItem : MenuItem {
-		ScribbleStrip *module ;
-		void onAction(const event::Action &e) override {
-			std::string beforeValue = (module->scribbleText == module->promptText) ? "" : module->scribbleText.c_str();
-			char *label = osdialog_prompt(OSDIALOG_INFO, "Label :", beforeValue.c_str());
-			if (label) {
-				module->scribbleText = std::string(label);
-				free(label);
-			}
-		}
-	};
 	struct ScribbleFlipMenuItem : MenuItem {
 		ScribbleStrip *module ;
 		void onAction(const event::Action &e) override {
 			module->writeTextFromTop = !(module->writeTextFromTop);
-			DEBUG("writeTextFromTop is now %d", module->writeTextFromTop);
 		}
 	};
+
+	// textfield as menu item, adapted from SubmarineFree
+	struct EventParamField : ui::TextField {
+		std::function<void(std::string)> changeHandler;
+		void step() override {
+			// Keep selected
+			APP->event->setSelected(this);
+			TextField::step();
+		}
+		void setText(std::string text) {
+			this->text = text;
+			selectAll();
+		}
+		void onSelectKey(const event::SelectKey &e) override {
+			if (e.action == GLFW_PRESS && (e.key == GLFW_KEY_ENTER || e.key == GLFW_KEY_KP_ENTER)) {
+				if (changeHandler) {
+					changeHandler(text);
+				}
+				ui::MenuOverlay *overlay = getAncestorOfType<ui::MenuOverlay>();
+				overlay->requestDelete();
+				e.consume(this);
+			}
+			if (!e.getTarget())
+				TextField::onSelectKey(e);
+		}
+	};
+
 	void appendContextMenu(Menu *menu) override {
 		//LABEL *module = dynamic_cast<LABEL*>(this->module);
 		ScribbleStrip *module = dynamic_cast<ScribbleStrip*>(this->module);
 		assert(module);
+		menu->addChild(new MenuSeparator);
 
-		menu->addChild(new MenuEntry);
-		ScribbleEditMenuItem *menuEdit = new ScribbleEditMenuItem;
-		menuEdit->text = "Edit label";
-		menuEdit->module = module;
-		menu->addChild(menuEdit);
+		MenuItem *editLabel = new MenuItem;
+		editLabel->text = "Edit this strip's label:";
+		editLabel->disabled = true;
+		menu->addChild(editLabel);
+
+		EventParamField *editField = new EventParamField();
+		editField->box.size.x = 100;
+		editField->setText(module->scribbleText);
+		editField->changeHandler = [=](std::string text) {
+			module->scribbleText = editField->text;
+		};
+		menu->addChild(editField);
+
 		ScribbleFlipMenuItem *menuFlip = new ScribbleFlipMenuItem;
 		menuFlip->text = "Flip text top-to-bottom";
 		menuFlip->module = module;
