@@ -1,5 +1,6 @@
 #include "plugin.hpp"
 #include "osdialog.h"
+#include <functional>
 
 struct ScribbleStrip : Module {
 	std::string promptText = "Rt-click to edit";
@@ -131,7 +132,7 @@ struct ScribbleStripWidget : ModuleWidget {
 		editField->box.size.x = 100;
 		editField->setText(module->scribbleText);
 		editField->changeHandler = [=](std::string text) {
-			module->scribbleText = editField->text;
+			module->scribbleText = text;
 		};
 		menu->addChild(editField);
 
