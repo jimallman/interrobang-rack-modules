@@ -34,16 +34,18 @@ struct ScribbleStrip : Module {
 
 struct ScribbleWidget : TransparentWidget {
 	ScribbleStrip *module;
-	std::shared_ptr<Font> font;
+	std::string fontPath = "res/mad-midnight-marker-font/MadMidnightMarker-na91.ttf";
+	// N.B. nanovg seems to only support .ttf fonts, *not* .otf!
 
 	ScribbleWidget() {
-		font = APP->window->loadFont(asset::plugin(pluginInstance, "res/mad-midnight-marker-font/MadMidnightMarker-na91.ttf"));
-		// N.B. nanovg seems to only support .ttf fonts, *not* .otf!
+		// we no longer load the font here
 	}
 
 	void draw(const DrawArgs &args) override {
 		// if module is not active (we're in the module browser) ,show a demo message
 		std::string scrText = module ? module->scribbleText : "Your message here!";
+		// N.B. in Rack v2, we load the font every time we draw (to handle embedded instances in DAW)
+		std::shared_ptr<Font> font = APP->window->loadFont(asset::plugin(pluginInstance, fontPath));
 		nvgFontSize(args.vg, 20);
 		nvgFontFaceId(args.vg, font->handle);
 		nvgTextLetterSpacing(args.vg, 0);
@@ -96,7 +98,7 @@ struct ScribbleStripWidget : ModuleWidget {
 		std::function<void(std::string)> changeHandler;
 		void step() override {
 			// Keep selected
-			APP->event->setSelected(this);
+			APP->event->setSelectedWidget(this);
 			TextField::step();
 		}
 		void setText(std::string text) {
