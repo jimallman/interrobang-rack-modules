@@ -1,4 +1,5 @@
 /build
+/dep
 /dist
 /plugin.so
 /plugin.dylib
